@@ -1,0 +1,6 @@
+Flask==0.12
+gunicorn==19.7.0
+requests==2.18.4
+pg8000==1.10.6
+ipython==6.0.0
+click==6.7
