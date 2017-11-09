@@ -6,7 +6,7 @@ from seventweets.app import create_app
 @click.group(cls=FlaskGroup, create_app=create_app)
 def cli():
     """
-    Managment script for seventweets service.
+    Management script for seventweets service.
     """
 
 

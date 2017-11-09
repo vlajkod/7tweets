@@ -7,6 +7,7 @@ import traceback
 from flask import Flask, g, current_app
 from seventweets import config as configuration
 from seventweets.handlers.base import base
+from seventweets.handlers.tweets import tweets
 
 LOG_FORMAT = ('%(asctime)-15s %(levelname)s: '
               '%(message)s [%(filename)s:%(lineno)d]')
@@ -31,6 +32,7 @@ def create_app(_=None):
     app.config.from_object(configuration)
 
     app.register_blueprint(base, url_prefix='/')
+    app.register_blueprint(tweets, url_prefix='/tweets')
     return app
 
 
