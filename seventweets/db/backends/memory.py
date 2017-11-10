@@ -50,6 +50,7 @@ class Operations(db.Operations):
             created_at=now, modified_at=now, reference=''
         )
         storage.tweets.append(new_tweet)
+        return new_tweet
 
     @staticmethod
     def get_all_tweets(storage: Database):

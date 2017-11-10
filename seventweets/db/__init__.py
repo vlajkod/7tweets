@@ -76,10 +76,10 @@ class Operations(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
 
-default_bakcend = os.getenv('ST_DB_BACKEND', 'memory')
+default_backend = os.getenv('ST_DB_BACKEND', 'pg')
 
 
-def get_db(backend=default_bakcend):
+def get_db(backend=default_backend):
     """
     Opens a new database connection if there is none yet for
     the current application context.
@@ -88,6 +88,6 @@ def get_db(backend=default_bakcend):
     return backend_module.Database()
 
 
-def get_ops(backend=default_bakcend) -> Operations:
+def get_ops(backend=default_backend) -> Operations:
     backend_module = import_module(f'seventweets.db.backends.{backend}')
-    return backend_module.Operations()
+    return backend_module.Operations

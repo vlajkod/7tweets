@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from functools import partial
 from seventweets.db import get_db, get_ops
 logger = logging.getLogger(__name__)
 
@@ -54,3 +55,12 @@ def get_all():
     :return: [Tweet]
     """
     return [Tweet(*args) for args in get_db().do(get_ops().get_all_tweets)]
+
+
+def create(content):
+    """
+    Creates new tweet with provided content.
+    :param content: Tweet content.
+    :return: Tweet
+    """
+    return Tweet(*get_db().do(partial(get_ops().insert_tweet, content)))
