@@ -17,6 +17,10 @@ class BadRequest(HttpException):
     CODE = 400
 
 
+class NotFound(HttpException):
+    CODE = 404
+
+
 def error_handler(f):
     """
     Handlers exceptions caught in http layer (server.py)

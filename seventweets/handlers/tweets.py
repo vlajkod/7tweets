@@ -8,8 +8,19 @@ logger = logging.getLogger(__name__)
 
 
 @tweets.route('/', methods=['GET'])
+@error_handler
 def get_all():
     return jsonify([t.to_dict() for t in tweet.get_all()])
+
+
+@tweets.route('/<int:tweet_id>', methods=['GET'])
+@error_handler
+def get_tweet(tweet_id):
+    """
+    Returns single tweet by ID.
+    :param tweet_id: ID of tweet to get.
+    """
+    return jsonify(tweet.by_id(tweet_id).to_dict())
 
 
 @tweets.route('/create', methods=['POST'])

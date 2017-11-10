@@ -90,17 +90,40 @@ class Operations(db.Operations):
         cursor.execute(f'''
             SELECT {TWEET_COLUMN_ORDER} 
             FROM tweets
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC;
         ''')
         return cursor.fetchall()
 
     @staticmethod
-    def get_tweet(id_: int, cursor):
-        pass
-    
+    def get_tweet(id_: int, cursor: pg8000.Cursor) -> TwResp:
+        """
+        Returns single tweet from database.
+
+        :param id_: ID of tweet to get.
+        :param cursor: Database cursor.
+        :return: Tweet with provided ID.
+        """
+        cursor.execute(f'''
+            SELECT {TWEET_COLUMN_ORDER}
+            FROM tweets
+            WHERE id=(%s)
+        ''', (id_,))
+        return cursor.fetchone()
+
+
     @staticmethod
-    def insert_tweet(tweet: str, cursor):
-        pass
+    def insert_tweet(tweet: str, cursor: pg8000.Cursor) -> TwResp:
+        """
+        Inserts new tweet and returns id of the created row.
+        :param tweet: Content of the tweet to add.
+        :param cursor: Database cursor.
+        :return: ID of tweet that was created.
+        """
+        cursor.execute(f'''
+            INSERT INTO tweets (tweet) VALUES (%s)
+            RETURNING {TWEET_COLUMN_ORDER};
+        ''', (tweet,))
+        return cursor.fetchone()
 
     @staticmethod
     def modify_tweet(id_: int, new_content: str, cursor):

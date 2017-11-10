@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from functools import partial
 from seventweets.db import get_db, get_ops
+from seventweets.exception import NotFound
 logger = logging.getLogger(__name__)
 
 
@@ -55,6 +56,18 @@ def get_all():
     :return: [Tweet]
     """
     return [Tweet(*args) for args in get_db().do(get_ops().get_all_tweets)]
+
+
+def by_id(id_):
+    """
+    Returns tweet with provided ID.
+    :param int id_: ID of tweet to get.
+    :raises NotFound: If tweet with provided ID was not founc.
+    """
+    res = get_db().do(partial(get_ops().get_tweet, id_))
+    if res is None:
+        raise NotFound(f'Tweet with id: {id_} not found.')
+    return Tweet(*res)
 
 
 def create(content):
