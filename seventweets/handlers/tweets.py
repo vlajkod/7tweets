@@ -35,3 +35,24 @@ def create_tweet():
     content = body['tweet']
     new_tweet = tweet.create(content)
     return jsonify(new_tweet.to_dict()), 201
+
+
+@tweets.route('/<int:tweet_id>', methods=['PUT'])
+@error_handler
+def modify(tweet_id):
+    """
+    Modifies tweet with provided ID
+    :param tweet_id: ID of tweet to get.
+    """
+    body = request.get_json(force=True)
+    if 'tweet' not in body:
+        BadRequest('Invalid body: no "tweet" key in body.')
+    content = body['tweet']
+    return jsonify(tweet.modify(tweet_id, content).to_dict())
+
+
+@tweets.route('/<int:tweet_id>', methods=['DELETE'])
+@error_handler
+def delete(tweet_id):
+    tweet.delete(tweet_id)
+    return '', 204

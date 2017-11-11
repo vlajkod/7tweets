@@ -110,7 +110,6 @@ class Operations(db.Operations):
         ''', (id_,))
         return cursor.fetchone()
 
-
     @staticmethod
     def insert_tweet(tweet: str, cursor: pg8000.Cursor) -> TwResp:
         """
@@ -126,9 +125,32 @@ class Operations(db.Operations):
         return cursor.fetchone()
 
     @staticmethod
-    def modify_tweet(id_: int, new_content: str, cursor):
-        pass
+    def modify_tweet(id_: int, new_content: str, cursor: pg8000.Cursor) -> TwResp:
+        """
+        Updates tweet content.
+
+        :param id_: Id of tweet to update.
+        :param new_content: New tweet content.
+        :param cursor: Database cursor.
+        :return: Tweet that was update, if tweet with provided ID was found, None otherwise
+        """
+        cursor.execute(f'''
+            UPDATE tweets SET tweet=%s, modified_at=%s
+            WHERE id = (%s)
+            RETURNING {TWEET_COLUMN_ORDER};
+        ''', (new_content, datetime.utcnow(), id_))
+        return cursor.fetchone()
 
     @staticmethod
-    def delete_tweet(id_: int, cursor):
-        pass
+    def delete_tweet(id_: int, cursor: pg8000.Cursor) -> bool:
+        """
+        Deletes tweet with provided ID from database.
+        :param id_: ID of tweet to delete.
+        :param cursor: Database Cursor
+        :return: Boolean indicating if tweet with ID was deleted (False if tweet does not exist.
+        """
+        cursor.execute(f'''
+            DELETE FROM tweets
+            WHERE id=%s
+        ''', (id_,))
+        return cursor.rowcount > 0

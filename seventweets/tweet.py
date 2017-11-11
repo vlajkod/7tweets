@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from functools import partial
 from seventweets.db import get_db, get_ops
-from seventweets.exception import NotFound
+from seventweets.exception import NotFound, BadRequest
 logger = logging.getLogger(__name__)
 
 
@@ -76,4 +76,42 @@ def create(content):
     :param content: Tweet content.
     :return: Tweet
     """
+    check_length(content)
     return Tweet(*get_db().do(partial(get_ops().insert_tweet, content)))
+
+
+def modify(id_, new_content):
+    """
+    Modifies tweet with provided new content.
+    :param id_: ID of tweet to modify.
+    :param new_content: New content for tweet.
+    :return: Modified tweet.
+    """
+    check_length(new_content)
+    updated = get_db().do(partial(get_ops().modify_tweet, id_, new_content))
+    if not updated:
+        raise NotFound(f'Tweet for ID: {id_} not found.')
+    return Tweet(*updated)
+
+
+def delete(id_):
+    """
+    Removes tweet with provided ID from database.
+    :param id_: ID of tweet to delete.
+    :raises: NotFound if tweet with provided ID not found.
+    """
+    deleted = get_db().do(partial(get_ops().delete_tweet, id_))
+    if not deleted:
+        raise NotFound(f'Tweet with provided id: {id_} not found.')
+    return deleted
+
+
+def check_length(tweet):
+    """
+    Verifies if provided tweet content is less than 140 characters.
+
+    :param str tweet: Tweet content to check.
+    :raises: BadRequest: If tweet content is longer then 140 characters.
+    """
+    if len(tweet) > 140:
+        raise BadRequest('Tweet length exceeds 140 characters.')
