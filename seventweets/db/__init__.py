@@ -1,9 +1,8 @@
 import logging
 import abc
 import os
-from typing import Tuple, TypeVar
+from typing import Tuple, TypeVar, Optional, Iterable
 from importlib import import_module
-
 from datetime import datetime
 
 # type for type hinting
@@ -72,6 +71,51 @@ class Operations(metaclass=abc.ABCMeta):
         :param id_: ID of tweet to delete.
         :param cursor: Database cursor.
         :return: Boolean indicating if tweet with ID was deleted. (False if tweet does not exist).
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    @abc.abstractmethod
+    def count_tweets(type_: str, cursor) -> int:
+        """
+        Returns number of tweets of specified type.
+
+        :param type_:
+        :param cursor:
+        :return:
+        """
+        return NotImplementedError()
+
+    @staticmethod
+    @abc.abstractmethod
+    def create_retweet(server: str, ref: str, cursor) -> TwResp:
+        """
+        Creates retweet in database that references server and tweet ID
+        provided in parameters.
+
+        :param: server: Server name of original tweet.
+        :param: ref: Tweet reference (ID) on original server.
+        :param: cursor: Database cursor.
+        :return: Newly created tweet.
+        """
+        raise NotImplementedError()
+
+    @staticmethod
+    @abc.abstractmethod
+    def search_tweets(content: Optional[str],
+                      from_created: Optional[datetime],
+                      to_created: Optional[datetime],
+                      from_modified: Optional[datetime],
+                      to_modified: Optional[datetime],
+                      retweet: Optional[bool], cursor) -> Iterable[TwResp]:
+        """
+        :param content: Content to search in tweet.
+        :param from_created: Start time for tweet creation.
+        :param to_created: End time for tweet creation.
+        :param from_modified: Start time for tweet modification.
+        :param to_modified: End time for tweet modification.
+        :param retweet: Flag indication if retweet or original tweets should be searched.
+        :param cursor: Database cursor.
         """
         raise NotImplementedError()
 

@@ -2,6 +2,7 @@ import logging
 from flask import Blueprint, request, jsonify
 from seventweets import tweet
 from seventweets.exception import error_handler, BadRequest
+from seventweets.handlers.utils import ensure_bool, ensure_dt
 
 tweets = Blueprint('tweets', __name__)
 logger = logging.getLogger(__name__)
@@ -56,3 +57,33 @@ def modify(tweet_id):
 def delete(tweet_id):
     tweet.delete(tweet_id)
     return '', 204
+
+
+@tweets.route('/retweet', methods=['POST'])
+@error_handler
+def retweet():
+    """
+    Creates retweet on this server that references tweet on provided server.
+    """
+    body = request.get_json(force=True);
+    if 'server' not in body or 'id' not in body:
+        raise BadRequest('Missing wither "server" or "id" from body.')
+    return jsonify(tweet.retweet(body['server'], body['id']).to_dict())
+
+
+@tweets.route('/search', methods=['GET'])
+@error_handler
+def search_single():
+    """
+    Performs search in database for tweets in this node only.
+    """
+    content = request.args.get('content', None) or None
+    created_from = ensure_dt(request.args.get('created_from', None) or None)
+    created_to = ensure_dt(request.args.get('created_to', None) or None)
+    modified_from = ensure_dt(request.args.get('modified_from', None) or None)
+    modified_to = ensure_dt(request.args.get('modified_to', None) or None)
+    retweets = ensure_bool(request.args.get('retweets', None) or None)
+    all = ensure_bool(request.args.get('all', None) or None)
+
+    results = tweet.search(content, created_from, created_to, modified_from, modified_to, retweets, all)
+    return jsonify([t.to_dict() for t in results])

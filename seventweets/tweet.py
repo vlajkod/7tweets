@@ -3,6 +3,8 @@ from datetime import datetime
 from functools import partial
 from seventweets.db import get_db, get_ops
 from seventweets.exception import NotFound, BadRequest
+from typing import List
+
 logger = logging.getLogger(__name__)
 
 
@@ -106,6 +108,58 @@ def delete(id_):
     return deleted
 
 
+def retweet(server, id_):
+    """
+    Creates retweet of original tweet.
+    :param server: Server name that holds original tweet.
+    :param id_: ID of tweet on original server.
+    :return: Newly created tweet.
+    :rtype: Tweet
+    """
+    return Tweet(*get_db().do(partial(get_ops().create_retweet, server, id_)))
+
+
+def search(content: str=None,
+           created_from: datetime=None,
+           created_to: datetime=None,
+           modified_from: datetime=None,
+           modified_to: datetime=None,
+           retweets: bool=None,
+           all: bool=False) -> List[Tweet]:
+    """
+    Performs search on tweets and returns list of results.
+    If no parameters are provided, this will yield same results as listing tweets.
+
+    :param content: Content to search in tweet.
+    :param created_from: Start time for tweet creation.
+    :param created_to: End time for tweet creation.
+    :param modified_from: Start time for tweet modification.
+    :param modified_to: End time for tweet modification.
+    :param retweets: Flag indication if retweet or original tweets should be searched.
+    :param all: Flag indication if all nodes should be searched or only this one.
+    :return: Result searching tweets.
+    :rtype: [Tweet]
+    """
+    search_fun = partial(get_ops().search_tweets, content, created_from, created_to,
+                         modified_from, modified_to, retweets)
+    res = [Tweet(*args) for args in get_db().do(search_fun)]
+    if all:
+        others_res = search_others(content, created_from, created_to,
+                                   modified_from, modified_to, retweets)
+        res.extend(others_res)
+    return res
+
+
+def search_others(content: str=None,
+           created_from: datetime=None,
+           created_to: datetime=None,
+           modified_from: datetime=None,
+           modified_to: datetime=None,
+           retweets: bool=None,
+           all: bool=False):
+    return []
+
+
 def check_length(tweet):
     """
     Verifies if provided tweet content is less than 140 characters.
@@ -115,3 +169,15 @@ def check_length(tweet):
     """
     if len(tweet) > 140:
         raise BadRequest('Tweet length exceeds 140 characters.')
+
+
+def count(type_: str=None):
+    """
+    Returns number of tweets in database. If `separate` is True, two values
+    are returned. First is number of original tweets and second is number of
+    retweets.
+
+    If `separate` is False (default) only one number is returned.
+    :param type_: Type of tweets to count. Valid values are 'original' and 'retweet'.
+    """
+    return get_db().do(partial(get_ops().count_tweets, type_))
